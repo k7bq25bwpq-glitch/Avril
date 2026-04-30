@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AVRIL v3</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;700&display=swap');
+  :root {
+    --bg: #08080e; --surface: #0f0f1a; --border: #1a1a2e;
+    --accent: #00ff88; --red: #ff3b5c; --blue: #4f8ef7;
+    --text: #e2e8f0; --muted: #4a5568; --purple: #a78bfa;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Noto Sans KR',sans-serif; padding:14px; max-width:480px; margin:0 auto; }
+  header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+  .logo { font-family:'JetBrains Mono',monospace; font-size:16px; color:var(--accent); letter-spacing:3px; }
+  .clock { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); }
+  .sec-title { font-size:10px; letter-spacing:3px; color:var(--muted); text-transform:uppercase; margin:14px 0 8px; font-family:'JetBrains Mono',monospace; }
+  .key-box { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:10px; }
+  .key-box label { font-size:10px; color:var(--muted); font-family:'JetBrains Mono',monospace; display:block; margin-bottom:6px; }
+  .key-box input { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:8px 10px; color:var(--text); font-family:'JetBrains Mono',monospace; font-size:11px; margin-bottom:8px; }
+  .key-box input:focus { outline:none; border-color:var(--accent); }
+  .btn-load { background:var(--accent); color:#000; border:none; border-radius:6px; padding:9px 0; width:100%; font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700; cursor:pointer; }
+  .btn-load:hover { background:#00dd77; }
+  .btn-load:disabled { background:var(--muted); cursor:not-allowed; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px; position:relative; overflow:hidden; }
+  .card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--muted); }
+  .card.up::before { background:var(--accent); }
+  .card.down::before { background:var(--red); }
+  .s-name { font-size:11px; color:var(--muted); margin-bottom:4px; }
+  .s-price { font-family:'JetBrains Mono',monospace; font-size:17px; font-weight:700; margin-bottom:2px; }
+  .s-change { font-family:'JetBrains Mono',monospace; font-size:12px; }
+  .up .s-price, .up .s-change { color:var(--accent); }
+  .down .s-price, .down .s-change { color:var(--red); }
+  .wl-table { background:var(--surface); border:1px solid var(--border); border-radius:8px; overflow:hidden; margin-bottom:4px; }
+  .wl-row { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:13px; }
+  .wl-row:last-child { border-bottom:none; }
+  .wl-right { display:flex; gap:8px; align-items:center; }
+  .wl-price { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); }
+  .badge { font-family:'JetBrains Mono',monospace; font-size:11px; padding:2px 7px; border-radius:4px; min-width:58px; text-align:right; }
+  .badge.up { background:rgba(0,255,136,0.1); color:var(--accent); }
+  .badge.down { background:rgba(255,59,92,0.1); color:var(--red); }
+  .skeleton { background:linear-gradient(90deg,var(--border) 25%,#1e1e30 50%,var(--border) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:4px; height:13px; margin:5px 0; }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .btn-analyze { background:linear-gradient(135deg,#4f8ef7,#a78bfa); color:#fff; font-weight:700; width:100%; padding:12px; font-size:13px; margin-top:12px; border-radius:8px; border:none; cursor:pointer; font-family:'JetBrains Mono',monospace; }
+  .btn-analyze:hover { opacity:0.9; }
+  .btn-analyze:disabled { opacity:0.4; cursor:not-allowed; }
+  .analysis-box { background:var(--surface); border:1px solid var(--purple); border-radius:8px; padding:14px; margin-top:12px; display:none; }
+  .analysis-box.show { display:block; }
+  .analysis-header { font-size:10px; color:var(--purple); font-family:'JetBrains Mono',monospace; letter-spacing:2px; margin-bottom:10px; }
+  .analysis-content { font-size:13px; line-height:1.8; white-space:pre-wrap; }
+  .note { font-size:10px; color:var(--muted); font-family:'JetBrains Mono',monospace; margin-top:4px; }
+  .last-update { font-size:10px; color:var(--muted); font-family:'JetBrains Mono',monospace; text-align:center; margin-top:8px; }
+  .refresh-row { display:flex; justify-content:space-between; align-items:center; }
+  .btn-ghost { background:transparent; border:1px solid var(--border); color:var(--muted); padding:3px 8px; border-radius:5px; font-size:10px; font-family:'JetBrains Mono',monospace; cursor:pointer; }
+  .btn-ghost:hover { border-color:var(--accent); color:var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">AVRIL v3</div>
+  <div class="clock" id="clock">--:--:--</div>
+</header>
+
+<!-- API 키 입력 -->
+<div class="key-box">
+  <label>FINNHUB API KEY (무료: finnhub.io)</label>
+  <input type="text" id="fKey" placeholder="예) d1abc23def456..." />
+  <label>ANTHROPIC API KEY (AI 분석용)</label>
+  <input type="password" id="cKey" placeholder="sk-ant-..." />
+  <button class="btn-load" onclick="startLoad()">🚀 데이터 로드</button>
+</div>
+
+<!-- 미국 -->
+<div class="refresh-row">
+  <div class="sec-title" style="margin:0">미국 반도체 / ETF</div>
+  <button class="btn-ghost" onclick="loadUS()">↻</button>
+</div>
+<div class="grid2" id="us-grid" style="margin-top:8px;">
+  <div class="card"><div class="skeleton"></div><div class="skeleton" style="width:60%"></div></div>
+  <div class="card"><div class="skeleton"></div><div class="skeleton" style="width:60%"></div></div>
+  <div class="card"><div class="skeleton"></div><div class="skeleton" style="width:60%"></div></div>
+  <div class="card"><div class="skeleton"></div><div class="skeleton" style="width:60%"></div></div>
+</div>
+
+<!-- 국장 -->
+<div class="sec-title" style="margin-top:14px;">국장 워치리스트 (어제 종가)</div>
+<div class="wl-table" id="kr-list"></div>
+<div class="note">* 국장 실시간은 MTS 이용</div>
+
+<!-- 코인 -->
+<div class="refresh-row" style="margin-top:14px;">
+  <div class="sec-title" style="margin:0">코인 (Binance 실시간)</div>
+  <button class="btn-ghost" onclick="loadCrypto()">↻</button>
+</div>
+<div class="grid2" id="crypto-grid" style="margin-top:8px;">
+  <div class="card"><div class="skeleton"></div><div class="skeleton" style="width:60%"></div></div>
+  <div class="card"><div class="skeleton"></div><div class="skeleton" style="width:60%"></div></div>
+  <div class="card"><div class="skeleton"></div><div class="skeleton" style="width:60%"></div></div>
+  <div class="card"><div class="skeleton"></div><div class="skeleton" style="width:60%"></div></div>
+</div>
+
+<button class="btn-analyze" onclick="analyze()" id="analyzeBtn">🤖 아브릴 AI 분석</button>
+
+<div class="analysis-box" id="aBox">
+  <div class="analysis-header">▸ AVRIL ANALYSIS</div>
+  <div class="analysis-content" id="aContent"></div>
+</div>
+
+<div class="last-update" id="lastUpdate"></div>
+
+<script>
+setInterval(() => {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString('ko-KR',{hour12:false});
+}, 1000);
+
+let mData = {};
+
+function getFKey() { return document.getElementById('fKey').value.trim(); }
+function getCKey() { return document.getElementById('cKey').value.trim(); }
+
+function startLoad() {
+  loadUS();
+  loadKR();
+  loadCrypto();
+}
+
+async function fetchFinnhub(symbol) {
+  const k = getFKey();
+  if (!k) return null;
+  try {
+    const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${k}`);
+    const d = await r.json();
+    if (!d.c || d.c === 0) return null;
+    return { price: d.c, change: ((d.c - d.pc) / d.pc * 100) };
+  } catch { return null; }
+}
+
+async function fetchCrypto(sym) {
+  try {
+    const r = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${sym}USDT`);
+    const d = await r.json();
+    return { price: parseFloat(d.lastPrice), change: parseFloat(d.priceChangePercent) };
+  } catch { return null; }
+}
+
+function fmt(n) {
+  if (n >= 1000) return n.toLocaleString('en',{maximumFractionDigits:0});
+  if (n >= 10) return n.toFixed(2);
+  if (n >= 0.1) return n.toFixed(3);
+  return n.toFixed(5);
+}
+
+function renderCard(el, name, price, change, unit='$') {
+  const up = change >= 0;
+  el.className = `card ${up?'up':'down'}`;
+  el.innerHTML = `
+    <div class="s-name">${name}</div>
+    <div class="s-price">${unit}${fmt(price)}</div>
+    <div class="s-change">${up?'+':''}${change.toFixed(2)}%</div>`;
+}
+
+const US = [
+  {s:'SOXL', n:'SOXL 반도체3배'},
+  {s:'NVDA', n:'NVDA 엔비디아'},
+  {s:'SMH',  n:'SMH 반도체ETF'},
+  {s:'AAPL', n:'AAPL 애플'},
+];
+
+const KR = [
+  {name:'삼성전자',      price:226750, change:2.14},
+  {name:'SK하이닉스',    price:1300000, change:5.20},
+  {name:'한화에어로',    price:412000,  change:1.87},
+  {name:'한미반도체',    price:185000,  change:3.20},
+  {name:'에코프로',      price:162100,  change:-0.98},
+  {name:'HD현대중공업',  price:289000,  change:7.47},
+];
+
+const CRYPTOS = [
+  {s:'BTC', n:'BTC'}, {s:'ETH', n:'ETH'},
+  {s:'WLD', n:'WLD'}, {s:'SENT', n:'SENT'},
+];
+
+async function loadUS() {
+  const g = document.getElementById('us-grid');
+  for (let i = 0; i < US.length; i++) {
+    const d = await fetchFinnhub(US[i].s);
+    if (d) {
+      mData[US[i].s] = {...d, name: US[i].n};
+      renderCard(g.children[i], US[i].n, d.price, d.change);
+    } else {
+      g.children[i].className = 'card';
+      g.children[i].innerHTML = `<div class="s-name">${US[i].n}</div><div class="note" style="margin-top:6px;">Finnhub 키 입력 필요</div>`;
+    }
+  }
+  updateTime();
+}
+
+function loadKR() {
+  const list = document.getElementById('kr-list');
+  list.innerHTML = '';
+  KR.forEach(s => {
+    mData[s.name] = s;
+    const up = s.change >= 0;
+    const row = document.createElement('div');
+    row.className = 'wl-row';
+    row.innerHTML = `
+      <span>${s.name}</span>
+      <div class="wl-right">
+        <span class="wl-price">₩${s.price.toLocaleString()}</span>
+        <span class="badge ${up?'up':'down'}">${up?'+':''}${s.change.toFixed(2)}%</span>
+      </div>`;
+    list.appendChild(row);
+  });
+}
+
+async function loadCrypto() {
+  const g = document.getElementById('crypto-grid');
+  // 초기화
+  g.innerHTML = CRYPTOS.map(() =>
+    `<div class="card"><div class="skeleton"></div><div class="skeleton" style="width:60%"></div></div>`
+  ).join('');
+
+  for (let i = 0; i < CRYPTOS.length; i++) {
+    const d = await fetchCrypto(CRYPTOS[i].s);
+    if (d) {
+      mData[CRYPTOS[i].s] = {...d, name: CRYPTOS[i].n};
+      renderCard(g.children[i], CRYPTOS[i].n, d.price, d.change);
+    } else {
+      g.children[i].innerHTML = `<div class="s-name">${CRYPTOS[i].n}</div><div class="note">오류</div>`;
+    }
+  }
+  updateTime();
+}
+
+function updateTime() {
+  document.getElementById('lastUpdate').textContent =
+    `갱신: ${new Date().toLocaleTimeString('ko-KR',{hour12:false})}`;
+}
+
+async function analyze() {
+  const ck = getCKey();
+  if (!ck || !ck.startsWith('sk-')) {
+    alert('Anthropic API 키를 입력해주세요!');
+    return;
+  }
+  const btn = document.getElementById('analyzeBtn');
+  const box = document.getElementById('aBox');
+  const content = document.getElementById('aContent');
+  btn.disabled = true;
+  btn.textContent = '분석 중...';
+  box.className = 'analysis-box show';
+  content.textContent = '⏳ 분석 중...';
+
+  const summary = Object.values(mData).map(d =>
+    `${d.name}: ${d.price} (${d.change>=0?'+':''}${parseFloat(d.change).toFixed(2)}%)`
+  ).join('\n');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:800,
+        messages:[{role:'user', content:
+          `너는 한국 소액 단타 트레이더 재원의 AI 코치 아브릴이야.
+현재 시장 데이터:
+${summary}
+
+오늘: 삼성전자 확정실적, FOMC, 애플 실적(밤)
+
+4줄로 친근하게 답해:
+1. 시장 분위기
+2. 가장 강한 종목/섹터
+3. 재원(시드 20만원) 오늘 주목 종목 1~2개
+4. 리스크`
+        }]
+      })
+    });
+    const data = await res.json();
+    content.textContent = data.content?.[0]?.text || JSON.stringify(data.error);
+  } catch(e) {
+    content.textContent = `오류: ${e.message}`;
+  }
+  btn.disabled = false;
+  btn.textContent = '🤖 아브릴 AI 분석';
+}
+
+// 초기 코인만 자동 로드 (키 없어도 됨)
+loadCrypto();
+loadKR();
+setInterval(loadCrypto, 30000);
+</script>
+</body>
+</html>
